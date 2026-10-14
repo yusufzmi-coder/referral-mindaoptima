@@ -1,0 +1,17 @@
+[Unit]
+Description=Minda Optima Referral Portal (referral.mindaoptima.com)
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/projects/referral-portal
+Environment=NODE_ENV=production
+Environment=PORT=3100
+# Shared secret used by pcs2.daftarmindaoptima.com when reporting new referees.
+EnvironmentFile=-/home/ubuntu/projects/referral-portal/.env
+ExecStart=/usr/bin/env node server.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

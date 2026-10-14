@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Anda Dijemput! — Minda Optima</title>
+  <meta name="description" content="Dapatkan 1 kelas percubaan PERCUMA di Minda Optima.">
+  <meta name="theme-color" content="#0D2A5C">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/common.js"></script>
+</head>
+<body class="min-h-screen bg-brand font-sans text-white antialiased">
+
+  <header class="max-w-md mx-auto px-4 py-5">
+    <a href="/" class="font-extrabold text-lg tracking-tight">Minda<span class="text-gold">Optima</span></a>
+  </header>
+
+  <main class="max-w-md mx-auto px-4 pb-12 text-center">
+    <div id="loading" class="py-20 text-white/70">Menyemak kod…</div>
+
+    <div id="content" class="hidden">
+      <p class="text-5xl">🎉</p>
+      <h1 id="headline" class="mt-4 text-3xl font-extrabold leading-tight"></h1>
+      <p id="subhead" class="mt-2 text-white/70"></p>
+
+      <!-- Offer card -->
+      <div class="mt-8 rounded-3xl bg-white p-6 text-brand shadow-xl">
+        <p class="text-xs font-bold uppercase tracking-wider text-gold-dark">Tawaran Istimewa</p>
+        <p class="mt-2 text-2xl font-extrabold">1 Kelas Percubaan <span class="bg-gold px-2 rounded">PERCUMA</span></p>
+        <p class="mt-1 text-slate-500">(nilai <span class="line-through">RM90</span>)</p>
+
+        <div id="code-box" class="hidden mt-5 rounded-xl border-2 border-dashed border-brand px-4 py-3">
+          <p class="text-xs text-slate-500">Kod rujukan</p>
+          <p id="code" class="text-xl font-black tracking-wider"></p>
+        </div>
+
+        <a id="cta" href="https://pcs2.daftarmindaoptima.com"
+           class="mt-6 block rounded-xl bg-gold py-4 text-lg font-bold text-brand hover:bg-gold-light transition">
+          Daftar Sekarang →
+        </a>
+        <p id="redirect-note" class="hidden mt-3 text-xs text-slate-400">
+          Anda akan dibawa ke halaman pendaftaran dalam <span id="redirect-secs" class="tabular-nums">8</span> saat…
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const REDIRECT_SECONDS = 8;
+    const params = new URLSearchParams(window.location.search);
+    const ref = (params.get('ref') || '').trim();
+    const $ = (id) => document.getElementById(id);
+
+    function show({ headline, subhead }) {
+      $('headline').textContent = headline;
+      $('subhead').textContent = subhead;
+      $('loading').classList.add('hidden');
+      $('content').classList.remove('hidden');
+    }
+
+    function autoRedirect(url) {
+      let left = REDIRECT_SECONDS;
+      $('redirect-note').classList.remove('hidden');
+      const timer = setInterval(() => {
+        left -= 1;
+        $('redirect-secs').textContent = left;
+        if (left <= 0) {
+          clearInterval(timer);
+          window.location.href = url;
+        }
+      }, 1000);
+    }
+
+    if (!ref) {
+      show({ headline: 'Jom sertai Minda Optima!', subhead: 'Bantu anak anda pandai membaca dengan yakin.' });
+    } else {
+      MO.api(`/api/referral/${encodeURIComponent(ref)}`)
+        .then((data) => {
+          show({
+            headline: `Kau dijemput oleh ${data.referrerName}!`,
+            subhead: 'Guna kod di bawah semasa mendaftar untuk tebus tawaran anda.',
+          });
+          $('code').textContent = data.code;
+          $('code-box').classList.remove('hidden');
+          $('cta').href = data.registerUrl;
+          autoRedirect(data.registerUrl);
+        })
+        .catch(() => {
+          show({
+            headline: 'Jom sertai Minda Optima!',
+            subhead: `Kod rujukan "${ref}" tidak dijumpai, tapi anda masih boleh mendaftar.`,
+          });
+        });
+    }
+  </script>
+</body>
+</html>
